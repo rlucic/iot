@@ -18,6 +18,11 @@ See https://docs.particle.io/tutorials/topics/maker-kit to learn how!
 more exact location: https://docs.particle.io/tutorials/projects/maker-kit/
 and from: https://github.com/adafruit/Adafruit_SSD1306/blob/master/examples/ssd1306_128x64_i2c/ssd1306_128x64_i2c.ino
 
+for sending JSON in the data to thingspeak:
+complete sample: https://www.hackster.io/kayakpete/multiple-sensors-particle-photon-thingspeak-3ff8a4
+using String: https://community.particle.io/t/how-to-pass-multiple-data-items-from-particle-device-to-webhook/25487/4
+using snprintf: https://community.particle.io/t/how-to-set-up-a-json-for-multiple-variables-in-a-webhook-integration/33172/7
+
 ******************************************************************************/
 
 // Data wire is plugged into pin D4 of the Particle
