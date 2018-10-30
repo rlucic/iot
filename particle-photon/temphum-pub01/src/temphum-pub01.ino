@@ -118,6 +118,13 @@ void loop() {
             Particle.publish(event_Name_hum,  "Rel Hum: " + String(h, 2) + "%", PRIVATE);
             delay(1100);
             Particle.publish(event_Name_digtemp, String(digt,2), PRIVATE);
+            delay(1100);
+            String jsonString = "{\"field1\":";
+            jsonString.concat("\"" + String(digt,2) + "\"");
+            jsonString.concat(",\"field2\":\"" + String(h,2) + "\"");
+            jsonString.concat("}");
+
+            Particle.publish("json", jsonString, PRIVATE);
             i=0;
         }
         j++;
