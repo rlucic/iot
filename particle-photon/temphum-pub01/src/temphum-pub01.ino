@@ -11,7 +11,7 @@
 
 
 /*****************************************************************************
-Reads DHT11 and publishes events with temperature and humidity
+Reads DHT22 and DallasTemperature 20B20 and publishes events with temperature and humidity
 
 See https://docs.particle.io/tutorials/topics/maker-kit to learn how!
 
@@ -26,37 +26,38 @@ using snprintf: https://community.particle.io/t/how-to-set-up-a-json-for-multipl
 ******************************************************************************/
 
 // Data wire is plugged into pin D4 of the Particle
+// Pin bus for digital temperature Maxim/Dallas temperature
 #define ONE_WIRE_BUS 4
 
-#define DHTPIN 2     // what pin we're connected to
+#define DHTPIN 2     // what pin we're connected DHTxx to
 
 // Uncomment whatever type you're using!
-#define DHTTYPE DHT11		// DHT 11
-//#define DHTTYPE DHT22		// DHT 22 (AM2302)
+//#define DHTTYPE DHT11		// DHT 11
+#define DHTTYPE DHT22		// DHT 22 (AM2302)
 //#define DHTTYPE DHT21		// DHT 21 (AM2301)
 DHT dht(DHTPIN, DHTTYPE);
 // Setup a oneWire instance to communicate with any OneWire devices
 // (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature.
+// Pass our oneWire reference to Dallas 20B20 Temperature.
 DallasTemperature sensors(&oneWire);
 
 String event_Name = "ambient-reading";
 String event_Name_Loop = "LoopingEvent";
 String event_Name_faultReading = "dht11-fault-reading";
-String event_Name_temp = "dht11-temp-reading";
+String event_Name_temp = "dht22-temp-reading";
 String event_Name_digtemp = "digtemp";
 String event_Name_dtemp = "temp";
-String event_Name_hum = "dht11-humid-reading";
+String event_Name_hum = "dht22-humid-reading";
 String app_name = "Ambient readings";
 
 int i = 0;
 int j = 0;
 
+// for using the time library
 // UDP UDPClient;
 // SparkTime rtc;
-
 // unsigned long currentTime;
 // unsigned long lastTime = 0UL;
 // String dateStr, timeStr;
@@ -70,9 +71,10 @@ void setup() {
 
     //START THE SENZOR READ
     dht.begin();
-    Particle.publish(app_name,"DHT11 senzor started!",PRIVATE);
+    Particle.publish(app_name,"DHT22 senzor started!",PRIVATE);
 
-        //initialize SparkTime
+    // for using the time library
+    // initialize SparkTime
     // rtc.begin(&UDPClient, "north-america.pool.ntp.org");
     // rtc.setTimeZone(-5); // gmt offset
 
@@ -85,10 +87,8 @@ void setup() {
 }
 
 void loop() {
-
-//    currentTime = rtc.now();
-
-
+// for using the time library
+// currentTime = rtc.now();
 
 // Reading temperature or humidity takes about 250 milliseconds!
 // Sensor readings may also be up to 2 seconds 'old' (its a
@@ -110,15 +110,17 @@ void loop() {
  	}
   else{
         //String eventString = "Temp: " + String(t, 2) + "C" + " | " + "Rel Hum: " + String(h, 2) + "%";
-
+        String d_temp = "";
+        d_temp = String(digt,2);
         i++;
         if(i>=3){
+            //pubish the event approx every 30 seconds
             Particle.publish(event_Name_temp, "Temp: " + String(t, 2) + "C", PRIVATE);
-            delay(1100);
+            delay(1000);
             Particle.publish(event_Name_hum,  "Rel Hum: " + String(h, 2) + "%", PRIVATE);
-            delay(1100);
-            Particle.publish(event_Name_digtemp, String(digt,2), PRIVATE);
-            delay(1100);
+            delay(1000);
+            Particle.publish(event_Name_digtemp, d_temp, PRIVATE);
+            delay(1000);
             String jsonString = "{\"field1\":";
             jsonString.concat("\"" + String(digt,2) + "\"");
             jsonString.concat(",\"field2\":\"" + String(h,2) + "\"");
@@ -128,9 +130,10 @@ void loop() {
             i=0;
         }
         j++;
-        if(j>45){
-          delay(1100);
-          Particle.publish(event_Name_dtemp, String(digt,2), PRIVATE);
+        if(j>60){
+          //publish to Thingspeak approx every 10 minutes
+          delay(1000);
+          Particle.publish(event_Name_dtemp, d_temp, PRIVATE);
           j=0;
         }
  	}
