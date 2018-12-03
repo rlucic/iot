@@ -93,11 +93,14 @@ void setup() {
 void loop() {
 // for using the time library
 // currentTime = rtc.now();
-//     delay(10000);
+
+//looks like the loop needs to have some code to execute
+//otherwise the sensors are not read correctly
+  delay(100);
 }
 
 void timer30sec_handler(){
-
+      delay(500);
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a
   // very slow sensor)
@@ -131,11 +134,11 @@ void timer30sec_handler(){
       jsonString.concat("\"" + String(digt,2) + "\"");
       jsonString.concat(",\"field2\":\"" + String(h,2) + "\"");
       jsonString.concat("}");
-
+ 
       Particle.publish("json", jsonString, PRIVATE);
 
      j++;
-     if(j>30 && digt > -127.00){
+     if(j>10 && !isnan(digt)){
         //publish to Thingspeak approx every 10 minutes
        delay(1000);
        Particle.publish(event_Name_dtemp, d_temp, PRIVATE);
