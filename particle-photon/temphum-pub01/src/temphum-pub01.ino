@@ -52,6 +52,8 @@ String event_Name_dtemp = "temp";
 String event_Name_hum = "dht22-humid-reading";
 String app_name = "Ambient readings";
 
+Timer timer30sec(30000, timer30sec_handler);
+
 int i = 0;
 int j = 0;
 
@@ -69,7 +71,7 @@ void setup() {
 
     delay(1000);
 
-    //START THE SENZOR READ
+    //START THE SENSOR DHT22
     dht.begin();
     Particle.publish(app_name,"DHT22 senzor started!",PRIVATE);
 
@@ -83,60 +85,60 @@ void setup() {
 
     Particle.publish(app_name,"End " + event_Name + " setup",PRIVATE);
     delay(5000);
+    //start the 30 seconds timer
+    timer30sec.start();
 
 }
 
 void loop() {
 // for using the time library
 // currentTime = rtc.now();
+//     delay(10000);
+}
 
-// Reading temperature or humidity takes about 250 milliseconds!
-// Sensor readings may also be up to 2 seconds 'old' (its a
-// very slow sensor)
-    float h = dht.getHumidity();
-// Read temperature as Celsius
-    float t = dht.getTempCelcius();
-// Read temperature as Farenheit
-    float f = dht.getTempFarenheit();
+void timer30sec_handler(){
 
-    sensors.requestTemperatures(); // Send the command to get temperature readings from the Dallas 20B20
-    float digt = sensors.getTempCByIndex(0);
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a
+  // very slow sensor)
+      float h = dht.getHumidity();
+  // Read temperature as Celsius
+      float t = dht.getTempCelcius();
+  // Read temperature as Farenheit
+  // float f = dht.getTempFarenheit();
 
-// Check if any reads failed and exit early (to try again).
- 	if (isnan(h) || isnan(t) || isnan(f)) {
-//		Serial.println("Failed to read from DHT sensor!");
- 	    Particle.publish(event_Name_faultReading,"Failed to read from DHT sensor!" ,PRIVATE);
- 		return;
- 	}
-  else{
-        //String eventString = "Temp: " + String(t, 2) + "C" + " | " + "Rel Hum: " + String(h, 2) + "%";
-        String d_temp = "";
-        d_temp = String(digt,2);
-        i++;
-        if(i>=3){
-            //pubish the event approx every 30 seconds
-            Particle.publish(event_Name_temp, "Temp: " + String(t, 2) + "C", PRIVATE);
-            delay(1000);
-            Particle.publish(event_Name_hum,  "Rel Hum: " + String(h, 2) + "%", PRIVATE);
-            delay(1000);
-            Particle.publish(event_Name_digtemp, d_temp, PRIVATE);
-            delay(1000);
-            String jsonString = "{\"field1\":";
-            jsonString.concat("\"" + String(digt,2) + "\"");
-            jsonString.concat(",\"field2\":\"" + String(h,2) + "\"");
-            jsonString.concat("}");
+      sensors.requestTemperatures(); // Send the command to get temperature readings from the Dallas 20B20
+      float digt = sensors.getTempCByIndex(0);
 
-            Particle.publish("json", jsonString, PRIVATE);
-            i=0;
-        }
-        j++;
-        if(j>60){
-          //publish to Thingspeak approx every 10 minutes
-          delay(1000);
-          Particle.publish(event_Name_dtemp, d_temp, PRIVATE);
-          j=0;
-        }
- 	}
+      if (isnan(h) || isnan(t)) {
+    //		Serial.println("Failed to read from DHT sensor!");
+     	    Particle.publish(event_Name_faultReading,"Failed to read from DHT sensor!" ,PRIVATE);
+     		return;
+     	}
 
-    delay(10000);
+      //String eventString = "Temp: " + String(t, 2) + "C" + " | " + "Rel Hum: " + String(h, 2) + "%";
+      String d_temp = "";
+      d_temp = String(digt,2);
+
+
+      Particle.publish(event_Name_temp, "Temp: " + String(t, 2) + "C", PRIVATE);
+      delay(1000);
+      Particle.publish(event_Name_hum,  "Rel Hum: " + String(h, 2) + "%", PRIVATE);
+      delay(1000);
+      Particle.publish(event_Name_digtemp, d_temp, PRIVATE);
+      delay(1000);
+      String jsonString = "{\"field1\":";
+      jsonString.concat("\"" + String(digt,2) + "\"");
+      jsonString.concat(",\"field2\":\"" + String(h,2) + "\"");
+      jsonString.concat("}");
+
+      Particle.publish("json", jsonString, PRIVATE);
+
+     j++;
+     if(j>30 && digt > -127.00){
+        //publish to Thingspeak approx every 10 minutes
+       delay(1000);
+       Particle.publish(event_Name_dtemp, d_temp, PRIVATE);
+       j=0;
+     }
 }
