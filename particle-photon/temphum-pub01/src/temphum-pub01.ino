@@ -10,7 +10,7 @@
 // #include <SparkTime.h>
 
 /*****************************************************************************
-Reads DHT22 and DallasTemperature 20B20 and publishes events with temperature and humidity
+Reads DHT22 and DallasTemperature 18B20 and publishes events with temperature and humidity
 
 See https://docs.particle.io/tutorials/topics/maker-kit to learn how!
 
@@ -39,7 +39,7 @@ DHT dht(DHTPIN, DHTTYPE);
 // (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas 20B20 Temperature.
+// Pass our oneWire reference to Dallas 18B20 Temperature.
 DallasTemperature sensors(&oneWire);
 
 String event_Name = "ambient-reading";
@@ -128,7 +128,7 @@ void timer30sec_handler(){
       // String d_temp = "";
       // d_temp = String(digt,2);
 
-      //publishing section for the Dallas 20B20
+      //publishing section for the Dallas 18B20
       // j++;
       // if(j>10 && !isnan(digt)){
       //    //publish to Thingspeak approx every 10 minutes
