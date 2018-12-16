@@ -9,7 +9,6 @@
 // // This #include statement was automatically added by the Particle IDE.
 // #include <SparkTime.h>
 
-
 /*****************************************************************************
 Reads DHT22 and DallasTemperature 20B20 and publishes events with temperature and humidity
 
@@ -57,6 +56,8 @@ Timer timer30sec(30000, timer30sec_handler);
 int i = 0;
 int j = 0;
 
+float digital_temp_calibration_value = 4.00;
+
 // for using the time library
 // UDP UDPClient;
 // SparkTime rtc;
@@ -80,7 +81,7 @@ void setup() {
     // rtc.begin(&UDPClient, "north-america.pool.ntp.org");
     // rtc.setTimeZone(-5); // gmt offset
 
-    //start the senzors
+    //start the sensors
     sensors.begin();
 
     Particle.publish(app_name,"End " + event_Name + " setup",PRIVATE);
@@ -110,38 +111,43 @@ void timer30sec_handler(){
   // Read temperature as Farenheit
   // float f = dht.getTempFarenheit();
 
-      sensors.requestTemperatures(); // Send the command to get temperature readings from the Dallas 20B20
-      float digt = sensors.getTempCByIndex(0);
+  if (isnan(h) || isnan(t)) {
+//		Serial.println("Failed to read from DHT sensor!");
+      Particle.publish(event_Name_faultReading,"Failed to read from DHT sensor!" ,PRIVATE);
+    return;
+  }
 
-      if (isnan(h) || isnan(t)) {
-    //		Serial.println("Failed to read from DHT sensor!");
-     	    Particle.publish(event_Name_faultReading,"Failed to read from DHT sensor!" ,PRIVATE);
-     		return;
-     	}
+  // Send the command to get temperature readings from the Dallas 20B20
+  //    sensors.requestTemperatures();
+  //    float digt = sensors.getTempCByIndex(0);
+  //    digt = digt - digital_temp_calibration_value;
+
+
 
       //String eventString = "Temp: " + String(t, 2) + "C" + " | " + "Rel Hum: " + String(h, 2) + "%";
-      String d_temp = "";
-      d_temp = String(digt,2);
+      // String d_temp = "";
+      // d_temp = String(digt,2);
 
+      //publishing section for the Dallas 20B20
+      // j++;
+      // if(j>10 && !isnan(digt)){
+      //    //publish to Thingspeak approx every 10 minutes
+      //     Particle.publish(event_Name_dtemp, d_temp, PRIVATE);
+      //     delay(1000);
+      //   j=0;
+      // }
 
       Particle.publish(event_Name_temp, "Temp: " + String(t, 2) + "C", PRIVATE);
       delay(1000);
       Particle.publish(event_Name_hum,  "Rel Hum: " + String(h, 2) + "%", PRIVATE);
       delay(1000);
-      Particle.publish(event_Name_digtemp, d_temp, PRIVATE);
-      delay(1000);
+      // Particle.publish(event_Name_digtemp, d_temp, PRIVATE);
+      // delay(1000);
+
       String jsonString = "{\"field1\":";
-      jsonString.concat("\"" + String(digt,2) + "\"");
+      jsonString.concat("\"" + String(t,2) + "\"");
       jsonString.concat(",\"field2\":\"" + String(h,2) + "\"");
       jsonString.concat("}");
- 
-      Particle.publish("json", jsonString, PRIVATE);
 
-     j++;
-     if(j>10 && !isnan(digt)){
-        //publish to Thingspeak approx every 10 minutes
-       delay(1000);
-       Particle.publish(event_Name_dtemp, d_temp, PRIVATE);
-       j=0;
-     }
+      Particle.publish("json", jsonString, PRIVATE);
 }
