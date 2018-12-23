@@ -5,6 +5,14 @@
 
 #define DEGREE_SYMBOL (char)223
 
+
+// other connections
+// LCD pin --> Other 
+// V0      --> Middle of 10K potentiometer, Connect the two ends of potentiometer to GND and 5V
+// A       --> To 5V through 220 ohm resistor
+// K       --> GND
+
+
 //define pins for the LCD
 // lcd pin --> Arduino digital pin
 #define LCD_RS 7
