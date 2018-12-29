@@ -44,16 +44,18 @@ DallasTemperature sensors(&oneWire);
 
 String event_Name = "ambient-reading";
 String event_Name_Loop = "LoopingEvent";
-String event_Name_faultReading = "dht11-fault-reading";
-String event_Name_temp = "dht22-temp-reading";
+String event_Name_dht11faultReading = "dht11-fault-reading";
+String event_Name_dht22faultReading = "dht22-fault-reading";
+String event_Name_dht11temp = "dht11-temp-reading";
+String event_Name_dht22temp = "dht22-temp-reading";
 String event_Name_digtemp = "digtemp";
 String event_Name_dtemp = "temp";
-String event_Name_hum = "dht22-humid-reading";
+String event_Name_dht22hum = "dht22-humid-reading";
 String app_name = "Ambient readings";
 
 Timer timer30sec(30000, timer30sec_handler);
 
-int i = 0;
+//int i = 0;
 int j = 0;
 
 float digital_temp_calibration_value = 4.00;
@@ -74,7 +76,7 @@ void setup() {
 
     //START THE SENSOR DHT22
     dht.begin();
-    Particle.publish(app_name,"DHT22 senzor started!",PRIVATE);
+    Particle.publish(app_name,"DHT22 sensor started!",PRIVATE);
 
     // for using the time library
     // initialize SparkTime
@@ -100,20 +102,25 @@ void loop() {
   delay(100);
 }
 
+/*
+function to handle the timer for 30 seconds
+*/
 void timer30sec_handler(){
-      delay(500);
+  //    delay(500);
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a
   // very slow sensor)
       float h = dht.getHumidity();
+      String pubh = String(h,2);
   // Read temperature as Celsius
       float t = dht.getTempCelcius();
+      String pubt = String(t,2);
   // Read temperature as Farenheit
   // float f = dht.getTempFarenheit();
 
   if (isnan(h) || isnan(t)) {
 //		Serial.println("Failed to read from DHT sensor!");
-      Particle.publish(event_Name_faultReading,"Failed to read from DHT sensor!" ,PRIVATE);
+      Particle.publish(event_Name_dht22faultReading,"Failed to read from DHT sensor!" ,PRIVATE);
     return;
   }
 
@@ -128,7 +135,7 @@ void timer30sec_handler(){
       // String d_temp = "";
       // d_temp = String(digt,2);
 
-      //publishing section for the Dallas 18B20
+      //Thingspeak publishing section for the Dallas 18B20
       // j++;
       // if(j>10 && !isnan(digt)){
       //    //publish to Thingspeak approx every 10 minutes
@@ -137,16 +144,24 @@ void timer30sec_handler(){
       //   j=0;
       // }
 
-      Particle.publish(event_Name_temp, "Temp: " + String(t, 2) + "C", PRIVATE);
-      delay(1000);
-      Particle.publish(event_Name_hum,  "Rel Hum: " + String(h, 2) + "%", PRIVATE);
-      delay(1000);
-      // Particle.publish(event_Name_digtemp, d_temp, PRIVATE);
-      // delay(1000);
+
+      //Thingspeak publishing section for the DHT22
+      j++;
+      if(j>10 && !isnan(t)){
+        //publish to Thingspeak approx every 5 minutes
+        Particle.publish("temp", pubt, PRIVATE);
+        Particle.publish(event_Name_dht22temp, pubt, PRIVATE);
+        j=0;
+      }
+
+      Particle.publish(event_Name_dht22temp, "Temp: " + pubt + "C", PRIVATE);
+      delay(100);
+      Particle.publish(event_Name_dht22hum,  "Rel Hum: " + pubh + "%", PRIVATE);
+      delay(100);
 
       String jsonString = "{\"field1\":";
-      jsonString.concat("\"" + String(t,2) + "\"");
-      jsonString.concat(",\"field2\":\"" + String(h,2) + "\"");
+      jsonString.concat("\"" + pubt + "\"");
+      jsonString.concat(",\"field2\":\"" + pubh + "\"");
       jsonString.concat("}");
 
       Particle.publish("json", jsonString, PRIVATE);
