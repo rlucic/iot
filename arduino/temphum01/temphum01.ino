@@ -1,4 +1,4 @@
-#include "DHT.h" //including the dht22 library
+#include "DHT.h" //including the Adafruit dht22 library
 #include "LiquidCrystal.h"
 #define DHTPIN 9 //Declaring pin 9 of arduino for the dht22
 #define DHTTYPE DHT22 //Defining which type of dht22 we are using (DHT22 or DHT11)
