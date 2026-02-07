@@ -1,6 +1,6 @@
 lcd 1602
 https://www.arduino.cc/en/Tutorial/HelloWorld
-https://howtomechatronics.com/tutorials/arduino/lcd-tutorial/
+https://howtomechatronics.com/tutorials/arduino/lcd-tutorial/ (shows how to connect Arduino to LCD 1602)
 https://www.youtube.com/watch?v=8rYUB5rcnOM
 
 
@@ -11,8 +11,6 @@ https://www.hackster.io/mafzal/temperature-monitoring-with-dht22-arduino-15b013
 
 DHT11
 
-
-
 DHT22 and LCD1602
-https://electronicshobbyists.com/temperature-and-humidity-sensor-dht22-arduino-interfacing-tutorial/
+This doesn't exist anymore: https://electronicshobbyists.com/temperature-and-humidity-sensor-dht22-arduino-interfacing-tutorial/
 https://www.onetransistor.eu/2018/01/compute-heat-index-arduino-dht.html
