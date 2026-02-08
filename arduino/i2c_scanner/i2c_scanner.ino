@@ -1,61 +1,83 @@
-/*
-** Example Arduino sketch for SainSmart I2C LCD2004 adapter for HD44780 LCD screens
-** Readily found on eBay or http://www.sainsmart.com/
-** The LCD2004 module appears to be identical to one marketed by YwRobot
-**
-** Address pins 0,1 & 2 are all permenantly tied high so the address is fixed at 0x27
-**
-** Written for and tested with Arduino 1.0
-** This example uses F Malpartida’s NewLiquidCrystal library. Obtain from:
-** https://bitbucket.org/fmalpartida/new-liquidcrystal
-**
-** Edward Comer
-** LICENSE: GNU General Public License, version 3 (GPL-3.0)
-*/
-#include <Wire.h>
-//#include <LCD.h>
-#include <LiquidCrystal_I2C.h>
-#define I2C_ADDR    0x27  // Define I2C Address where the PCF8574A is
-#define BACKLIGHT_PIN     3
-#define En_pin  2
-#define Rw_pin  1
-#define Rs_pin  0
-#define D4_pin  4
-#define D5_pin  5
-#define D6_pin  6
-#define D7_pin  7
-int n = 1;
-LiquidCrystal_I2C       lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
+ // --------------------------------------
+// i2c_scanner
+//
+// Version 1
+//    This program (or code that looks like it)
+//    can be found in many places.
+//    For example, on the Arduino.cc forum.
+//    The original author is not known.
+// Version 2, Juni 2012, Using Arduino 1.0.1
+//     Adapted to be as simple as possible by Arduino.cc user Krodal
+// Version 3, Feb 26  2013
+//    V3 by louarnold
+// Version 4, March 3, 2013, Using Arduino 1.0.3
+//    by Arduino.cc user Krodal.
+//    Changes by louarnold removed.
+//    Scanning addresses changed from 0...127 to 1...119,
+//    according to the i2c scanner by Nick Gammon
+//    http://www.gammon.com.au/forum/?id=10896
+// Version 5, March 28, 2013
+//    As version 4, but address scans now to 127.
+//    A sensor seems to use address 120.
+// Version 6, November 27, 2015.
+//    Added waiting for the Leonardo serial communication.
+// 
+//
+// This sketch tests the standard 7-bit addresses
+// Devices with higher-bit addresses might not be seen properly.
+//
 
-//Connecting the LCD 2004A (with PCF8574)
-//LCD 2004 address 0X27 (I2C)
-//SDA --> PIN A4
-//SCL --> PIN A5
+#include <Wire.h>
 
 
 void setup()
 {
-  lcd.begin (20,4);
-// Switch on the backlight
-  lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
-  lcd.setBacklight(HIGH);
-  lcd.home ();                   // go home
-  lcd.print("SainSmart I2C test");
-  lcd.setCursor ( 0, 1 );        // go to the next line
-  lcd.print("F Malpartida library");
-  lcd.setCursor ( 0, 2 );        // go to the next line
-  lcd.print("Test By Edward Comer");
-  lcd.setCursor ( 0, 3 );        // go to the next line
-  lcd.print("iter no: ");
-//  lcd.print(“Iteration No: “);
+  Wire.begin();
+
+  Serial.begin(9600);
+  while (!Serial);             // Leonardo: wait for serial monitor
+  Serial.println("\nI2C Scanner");
 }
+
+
 void loop()
 {
-  // Backlight on/off every 3 seconds
-  lcd.setCursor (14,3);        // go col 14 of line 3
-  lcd.print(n++,DEC);
-  lcd.setBacklight(LOW);      // Backlight off
-  delay(3000);
-  lcd.setBacklight(HIGH);     // Backlight on
-  delay(3000);
+  byte error, address;
+  int nDevices;
+
+  Serial.println("Scanning...");
+
+  nDevices = 0;
+  for(address = 1; address < 127; address++ ) 
+  {
+    // The i2c_scanner uses the return value of
+    // the Write.endTransmisstion to see if
+    // a device did acknowledge to the address.
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+
+    if (error == 0)
+    {
+      Serial.print("I2C device found at address 0x");
+      if (address<16) 
+        Serial.print("0");
+      Serial.print(address,HEX);
+      Serial.println("  !");
+
+      nDevices++;
+    }
+    else if (error==4) 
+    {
+      Serial.print("Unknown error at address 0x");
+      if (address<16) 
+        Serial.print("0");
+      Serial.println(address,HEX);
+    }    
+  }
+  if (nDevices == 0)
+    Serial.println("No I2C devices found\n");
+  else
+    Serial.println("done\n");
+
+  delay(10000);           // wait 10 seconds for next scan
 }
