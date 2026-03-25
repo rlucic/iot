@@ -3,18 +3,13 @@ This example is intended to demonstrate the use of the GPIO Viewer Library.
 
 Tutorial : https://youtu.be/UxkOosaNohU
 Latest Features : https://youtu.be/JJzRXcQrl3I
-Documentation : https://github.com/thelastoutpostworkshop/gpio_viewer
+Documentation : https://github.com/thelastoutpostworkshop/gpio_viewer (Download the library from here)
 
 The following libraries need to be added to Arduino IDE:
-- ESP Async WebServer (and NOT ESPAsyncWebServer !!!!!)
-- Async TCP (and NOT AsyncTCP !!!!!)
+- ESP Async WebServer by ESP32Async (and NOT ESPAsyncWebServer !!!!!). Installed from the Libraries area.
+- Async TCP by ESP32Async (and NOT AsyncTCP !!!!!). Installed from the Libraries area.
 
-The ESP32 type: ESP32-VROOM-32D (30 pins)
-
-// Last tested on:
-// Espressif Arduino Core v3.3.6
-// ESP Async WebServer 3.9.5
-// AsyncTCP            3.4.9
+The ESP32 type for the viewer: ESP32-VROOM-32D (30 pins)
 ***/
 
 // Since version 1.5.6, the library detects pin functions like ADC and Touch, this has been causing problems on some boards, like the XiaoESP32-S3-Sense. You can disable pin detection by uncommenting the following line:
