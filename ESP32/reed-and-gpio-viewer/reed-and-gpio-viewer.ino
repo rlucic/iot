@@ -1,6 +1,4 @@
 /***
-This example is intended to demonstrate the use of the GPIO Viewer Library.
-
 GPIO Viewer Tutorial : https://youtu.be/UxkOosaNohU
 Latest Features : https://youtu.be/JJzRXcQrl3I
 GPIO Viewer Documentation : https://github.com/thelastoutpostworkshop/gpio_viewer (Download the library from here)
@@ -11,8 +9,8 @@ The following libraries need to be added to Arduino IDE:
 
 The ESP32 type for the viewer: ESP32-VROOM-32D (30 pins)
 
+sensor hardware: HW-497
 Reed sensor tutorial: https://www.youtube.com/watch?v=9qyQhf1gVgE
-
 ***/
 
 // Since version 1.5.6, the library detects pin functions like ADC and Touch, this has been causing problems on some boards, like the XiaoESP32-S3-Sense. You can disable pin detection by uncommenting the following line:
@@ -24,10 +22,11 @@ Reed sensor tutorial: https://www.youtube.com/watch?v=9qyQhf1gVgE
 
 #define LED 2
 #define EXT_LED 25
-#define REED_PIN 26
+#define REED_PIN 26  //connect to the S pin of the Reed sensor
 
 GPIOViewer gpio_viewer;
 //Servo myServo;
+float count = 0;
 
 void setup()
 {
@@ -56,15 +55,24 @@ void setup()
 void loop() {
 
   boolean state = digitalRead(REED_PIN);
-  digitalWrite(LED, HIGH);
-  digitalWrite(EXT_LED, LOW);
-  Serial.println("INTERNAL LED is on");
+  // Serial.print("Reed state: ");
+  // Serial.println(state);
 
-  delay(2000);
+  if(state == LOW){
+    digitalWrite(LED, HIGH);
+    digitalWrite(EXT_LED, LOW);
+    count++;
+    Serial.print("Magnetic proximity detected for ");
+    Serial.print(count/2);
+    Serial.println(" seconds.");
+    delay(500);
+  }
+  else{
+    count=0;
+    digitalWrite(LED, LOW);
+    digitalWrite(EXT_LED, HIGH);
+    delay(500);
+  }
 
-  digitalWrite(LED, LOW);
-  digitalWrite(EXT_LED, HIGH);
-  Serial.println("INTERNAL LED is off");
-  delay(2000);
 }
 
