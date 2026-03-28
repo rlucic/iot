@@ -68,7 +68,10 @@ void loop() {
     delay(500);
   }
   else{
-    count=0;
+    if (count > 0){
+      Serial.println("-----------");
+      count=0;
+    }
     digitalWrite(LED, LOW);
     digitalWrite(EXT_LED, HIGH);
     delay(500);
