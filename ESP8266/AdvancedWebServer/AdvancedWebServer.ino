@@ -14,6 +14,10 @@ Loaded on ESP8266 1
 #include <StreamString.h>
 #include <Adafruit_AHTX0.h>
 
+#include <ArduinoJson.h>
+#include "FS.h"
+#include <LittleFS.h>
+
 #ifndef STASSID
 #define STASSID "BELL481"
 #define STAPSK "7AEF5D494AF9"
@@ -30,6 +34,9 @@ int data = 0;
 const char *APIKey = "3DSGH4PYEK2TQM7V";
 String thspeak = "http://api.thingspeak.com/update";
 
+String thspeak_s = "";
+String APIKey_s = "";
+const char *networkName_s;
 
 ESP8266WebServer server(80);
 
@@ -56,13 +63,13 @@ void handleRoot() {
     <meta http-equiv='refresh' content='5'/>\
     <title>ESP8266 Demo</title>\
     <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; font-size: 26; Color: #000088; }\
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; font-size: 36; Color: #000088; }\
     </style>\
   </head>\
   <body>\
     <h1>ESP8266 Sensors read</h1>\
     <p>Uptime                   :%02d:%02d:%02d</p>\
-    <p>Current temperature      : %0.2f°C</p>\
+    <p>Current temperature      : %0.2f C</p>\
     <p>Current relative humidity: %0.2f%</p>\
     <br><br><br>\
     <p>Host name: %s</p>\
@@ -92,16 +99,16 @@ void handleInfo(){
   temp.printf("\
 <html>\
   <head>\
-    <meta http-equiv='refresh' content='10'/>\
+    <meta http-equiv='refresh' content='20'/>\
     <title>ESP8266 Sensors read</title>\
     <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; font-size: 26; Color: #000088; }\
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; font-size: 36; Color: #000088; }\
     </style>\
   </head>\
   <body>\
-    <h1>Information page with sensors values</h1>\
+    <h1>Info page with sensors values</h1>\
     <p>Uptime                   :%02d:%02d:%02d</p>\
-    <p>Current temperature      : %0.2f°C</p>\
+    <p>Current temperature      : %0.2f C</p>\
     <p>Current relative humidity: %0.2f%</p>\
     <br><br><br>\
     <p>Host name: %s</p>\
@@ -166,6 +173,9 @@ void setup(void) {
     Serial.print(".");
   }
 
+  loadConfig();
+
+  Serial.println("serverPath");
   Serial.println("");
   Serial.print("Connected to ");
   Serial.println(ssid);
@@ -210,7 +220,7 @@ void send_data_to_thingspeak(){
   WiFiClient wificlient;
   HTTPClient http;
 
-  String serverPath = thspeak + "?api_key=" + String(APIKey) + "&field1=" + new_temp + "&field2=" + new_hum;
+  String serverPath = thspeak_s + "?api_key=" + String(APIKey_s) + "&field1=" + new_temp + "&field2=" + new_hum;
   Serial.println(serverPath);
   http.begin(wificlient, serverPath);
   int httpResponse = http.GET();
@@ -224,4 +234,55 @@ void send_data_to_thingspeak(){
   Serial.println("<<< Sending data to ThingSpeak...");
   //delay(30000);
 
+}
+
+/**
+Loading values from the /config.json file (LittleFS)
+**/
+bool loadConfig() {
+  Serial.println("Mounting FS...");
+
+  if (!LittleFS.begin()) {
+    Serial.println("Failed to mount file system");
+    return false;
+  }
+
+  File configFile = LittleFS.open("/config.json", "r");
+  if (!configFile) {
+    Serial.println("Failed to open config file");
+    return false;
+  }
+
+  StaticJsonDocument<300> doc;
+  auto error = deserializeJson(doc, configFile);
+  if (error) {
+    Serial.println("Failed to parse config file");
+    return false;
+  }
+
+//  const char* networkName = doc["networkName"];
+  networkName_s = doc["networkName"];
+  const char* password = doc["password"];
+  const char* thspeak = doc["thspeak"];
+  const char* thspeakAPIKey = doc["thspeakAPIKey"];
+
+  thspeak_s = doc["thspeak"].as<String>();
+  APIKey_s = doc["thspeakAPIKey"].as<String>();
+
+  // Real world application would store these values in some variables for
+  // later use.
+
+  Serial.println("Values loaded from the config file:");
+  Serial.print("Loaded network: ");
+  Serial.println(networkName_s);
+  Serial.print("password: ");
+  Serial.println(password);
+
+  Serial.print("ThingSpeak: ");
+  Serial.println(thspeak);
+
+  Serial.print("thspeakAPIKey: ");
+  Serial.println(APIKey_s);
+
+  return true;
 }
