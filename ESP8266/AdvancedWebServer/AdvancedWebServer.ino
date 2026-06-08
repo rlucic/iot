@@ -18,21 +18,12 @@ Loaded on ESP8266 1
 #include "FS.h"
 #include <LittleFS.h>
 
-#ifndef STASSID
-#define STASSID "BELL481"
-#define STAPSK "7AEF5D494AF9"
-#endif
-
 #define LED_WHITE D1
 #define LED_GREEN D4
 
 
-const char *ssid = STASSID;
-const char *password = STAPSK;
 long last_submission = millis();
 int data = 0;
-const char *APIKey = "3DSGH4PYEK2TQM7V";
-String thspeak = "http://api.thingspeak.com/update";
 
 String thspeak_s = "";
 String APIKey_s = "";
@@ -68,7 +59,7 @@ void handleRoot() {
   </head>\
   <body>\
     <h1>ESP8266 Sensors read</h1>\
-    <p>Uptime                   :%02d:%02d:%02d</p>\
+    <p>Uptime                   : %02d:%02d:%02d</p>\
     <p>Current temperature      : %0.2f C</p>\
     <p>Current relative humidity: %0.2f%</p>\
     <br><br><br>\
@@ -107,7 +98,7 @@ void handleInfo(){
   </head>\
   <body>\
     <h1>Info page with sensors values</h1>\
-    <p>Uptime                   :%02d:%02d:%02d</p>\
+    <p>Uptime                   : %02d:%02d:%02d</p>\
     <p>Current temperature      : %0.2f C</p>\
     <p>Current relative humidity: %0.2f%</p>\
     <br><br><br>\
@@ -161,29 +152,10 @@ void read_the_sensor(){
 void setup(void) {
   pinMode(LED_GREEN, OUTPUT);
   digitalWrite(LED_GREEN, 0);
-  // Connect to the wifi network
+
   Serial.begin(115200);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.println("");
 
-  // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  loadConfig();
-
-  Serial.println("serverPath");
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  if (MDNS.begin("esp8266")) { Serial.println("MDNS responder started"); }
-  // END Connect to the wifi network
+  loadConfigAndConnectToWiFi();
 
   // Set the web server links handlers
   server.on("/", handleRoot);
@@ -239,7 +211,7 @@ void send_data_to_thingspeak(){
 /**
 Loading values from the /config.json file (LittleFS)
 **/
-bool loadConfig() {
+bool loadConfigAndConnectToWiFi() {
   Serial.println("Mounting FS...");
 
   if (!LittleFS.begin()) {
@@ -260,8 +232,7 @@ bool loadConfig() {
     return false;
   }
 
-//  const char* networkName = doc["networkName"];
-  networkName_s = doc["networkName"];
+  const char* networkName = doc["networkName"];
   const char* password = doc["password"];
   const char* thspeak = doc["thspeak"];
   const char* thspeakAPIKey = doc["thspeakAPIKey"];
@@ -274,7 +245,7 @@ bool loadConfig() {
 
   Serial.println("Values loaded from the config file:");
   Serial.print("Loaded network: ");
-  Serial.println(networkName_s);
+  Serial.println(networkName);
   Serial.print("password: ");
   Serial.println(password);
 
@@ -283,6 +254,26 @@ bool loadConfig() {
 
   Serial.print("thspeakAPIKey: ");
   Serial.println(APIKey_s);
+
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(networkName, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  if (MDNS.begin("esp8266")) { 
+    Serial.println("");
+    Serial.println("MDNS responder started"); 
+  }
+  // END Connect to the wifi network
+
+  Serial.println("");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 
   return true;
 }
