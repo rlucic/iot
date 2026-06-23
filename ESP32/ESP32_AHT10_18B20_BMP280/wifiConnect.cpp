@@ -1,6 +1,10 @@
 #include "wifiConnect.h"
 #include "utils.h"
 #include <WiFi.h>
+#include <WebServer.h>
+
+
+
 
 void connectToWiFi() {
     Serial.println("Connecting to WiFi...");
@@ -23,3 +27,10 @@ void connectToWiFi() {
         Serial.println("\n❌ Failed to connect to WiFi");
     }
 }
+
+void webServerSetup(){
+  
+}
+
+
+

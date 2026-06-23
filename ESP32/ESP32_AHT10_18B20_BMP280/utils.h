@@ -31,6 +31,12 @@ extern String WIFI_PASSWORD;
 // =====================
 static const unsigned long WIFI_RECONNECT_INTERVAL_MS = 30000;
 
+// =====================
+// Web Server
+// =====================
+static const uint16_t HTTP_PORT = 80;
+
+
 struct SensorData  {
     String uptime_s;
     uint32_t sample_age_ms;

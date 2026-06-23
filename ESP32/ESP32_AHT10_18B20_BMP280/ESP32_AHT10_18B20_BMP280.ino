@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "wifiConnect.h"
 #include <ArduinoJson.h>
+#include <WiFi.h>
 
 
 /**Sensors and connections
@@ -20,6 +21,9 @@ BMP280:
 - Uses default I2C pins, in parralel with AHT10
 
 **/
+
+static WebServer server(HTTP_PORT);
+StaticJsonDocument<512> jsonDoc;
 
 void setup() {
   Serial.begin(115200);
@@ -67,12 +71,18 @@ void setup() {
   delay(100);
 
   dsDetectAndPrint1WireAddresses();
+
+  server.onNotFound(handleNotFound);
+  server.on("/api", HTTP_GET, handleSensorsAPI);
+  server.on("/", HTTP_GET, handleRoot);
+  server.begin();
 }
 
 void loop() {
   SensorData data;
-
+  server.handleClient();
   data.uptime_s = millis()/1000;
+  data.wifi_ip = WiFi.localIP().toString();
 
   Serial.println("<--- AHT10 section --->");
   sensors_event_t humidity, temp;
@@ -99,9 +109,12 @@ void loop() {
   data.bmp280_pressure_hpa = bmp.readPressure()/100;
   data.bmp280_altitude_m = bmp.readAltitude(1013.25);
   data.avg_temp_c = (data.aht10_temp_c + data.bmp280_temp_c + data.ds18b20_temp_c)/3;
-  StaticJsonDocument<512> jsonDoc;
+  //StaticJsonDocument<512> jsonDoc;
+
+  //update the JSON object from the struct that has the data
   updateJsonFromStruct(jsonDoc, data);
 
+  //print sensor info to the Serial output
   serializeJson(jsonDoc, Serial);
 
   Serial.println();
@@ -126,13 +139,13 @@ void updateJsonFromStruct(JsonDocument& doc, const SensorData& data) {
 
     // aht10
     JsonObject aht10 = doc["aht10"].to<JsonObject>();
-    aht10["ok"] = data.aht10_ok;
+    // aht10["ok"] = data.aht10_ok;
     aht10["temp_c"] = data.aht10_temp_c;
     aht10["humidity"] = data.aht10_humidity;
 
     // bmp280
     JsonObject bmp280 = doc["bmp280"].to<JsonObject>();
-    bmp280["ok"] = data.bmp280_ok;
+    // bmp280["ok"] = data.bmp280_ok;
     bmp280["temp_c"] = data.bmp280_temp_c;
     bmp280["pressure_hpa"] = data.bmp280_pressure_hpa;
     bmp280["altitude_m"] = data.bmp280_altitude_m;
@@ -142,6 +155,23 @@ void updateJsonFromStruct(JsonDocument& doc, const SensorData& data) {
 
 }
 
+void handleNotFound() {
+    String msg = "Not Found\n\nURI: ";
+    msg += server.uri();
+    msg += "\nMethod: ";
+    msg += (server.method() == HTTP_GET) ? "GET" : "OTHER";
+    server.send(404, "text/plain", msg);
+}
 
+void handleSensorsAPI(){
+  String forApi="";
+  serializeJsonPretty(jsonDoc, forApi);
+  server.send(200, "application/json", forApi);
+  return;
+}
 
-
+void handleRoot(){
+  String rootMessage=" Message from root";
+  server.send(200, "text/plain", rootMessage);
+  return;
+}
