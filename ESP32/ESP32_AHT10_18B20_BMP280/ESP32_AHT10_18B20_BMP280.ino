@@ -81,7 +81,7 @@ void setup() {
 void loop() {
   SensorData data;
   server.handleClient();
-  data.uptime_s = millis()/1000;
+  data.uptime_s = getUpTimeString();
   data.wifi_ip = WiFi.localIP().toString();
 
   Serial.println("<--- AHT10 section --->");

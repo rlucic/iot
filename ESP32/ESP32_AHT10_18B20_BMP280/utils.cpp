@@ -118,3 +118,11 @@ void printStrings(){
   Serial.print("ThingSpeak as String: " + thspeak_s);
   Serial.println("<<< End Printing Strings");
 }
+
+String getUpTimeString(){
+  int sec = millis()/1000;
+  int min = sec/60;
+  int hr  = min/60;
+  
+  return String(hr) + "h " + String(min%60) + "m " + String(sec%60) + "s";
+}

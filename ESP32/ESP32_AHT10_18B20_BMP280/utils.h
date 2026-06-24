@@ -70,3 +70,4 @@ void i2cScan();
 void dsDetectAndPrint1WireAddresses();
 bool loadJSONConfig();
 void printStrings();
+String getUpTimeString();
